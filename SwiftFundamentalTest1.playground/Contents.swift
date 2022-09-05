@@ -86,7 +86,7 @@ class SwiftFundamentalsTest1: XCTestCase {
     func testReverse() {
         let array = [901,722,917,804,117,610,170,734,543,370,11,221,32,794,832,635,315,230,957,559,706,904,31,94,919,20,117]
         let reversedArray = self.instance.reverse(array: array)
-        let expectedValue = [901, 722, 917, 804, 117, 610, 170, 734, 543, 370, 11, 221, 32, 794, 832, 635, 315, 230, 957, 559, 706, 904, 31, 94, 919, 20, 117]
+        let expectedValue = Array(array.reversed())
         
         XCTAssertEqual(reversedArray, expectedValue, "Array should be reversed")
     }
@@ -137,7 +137,7 @@ class SwiftFundamentalsTest1: XCTestCase {
     func testCommonElements() {
         let set1: Set = [4, 2, 8, 0, 9, 3, 5]
         let set2: Set = [1, 4, 9, 3, 7]
-        let expectedValue: Set = [9, 3]
+        let expectedValue: Set = [9, 3, 4]
         
         let result = self.instance.commonElements(set1: set1, set2: set2)
         
@@ -147,7 +147,7 @@ class SwiftFundamentalsTest1: XCTestCase {
     func testSubtract() {
         let set: Set = [4, 2, 8, 0, 9, 3, 5]
         let diff: Set = [1, 4, 9, 3, 7]
-        let expectedValue: Set = [4, 2, 8, 0, 5]
+        let expectedValue: Set = [2, 5, 8, 0]
         
         let result = self.instance.subtract(original: set, diff: diff)
         
@@ -396,71 +396,125 @@ class SwiftFundamentalsTest1: XCTestCase {
  Testing classes, should be implemented with correct body
  */
 
+
 class SwiftFundamentals1: SwiftFundamentals1Protocol {
+    let maxHalf = (pow(2, 30) - 1 as NSDecimalNumber).intValue;
+    var rand: Int {
+        return Int.random(in: 0...self.maxHalf) * 2;
+    }
+    
     func generateUniqueEvenIntArray(size: Int) -> [Int] {
-        // return an array of random, unique, even integer numbers with the size of `number`
-        return []
+        var result = Set<Int>();
+        
+        while (result.count < size) {
+            result.insert(self.rand)
+        }
+        
+        return Array(result.sorted())
     }
     
     func filterEvenNumbers(array: [Int]) -> [Int] {
         // return the filtered version of `array` only contains even numbers
-        return []
+        return array.filter {
+            return $0 % 2 == 0
+        }
     }
     
     func longNumberText(number: Int) -> String {
         // return the integer number sequence until `number` with appended into a string
         // example: input `number` = 5, output should be "012345"
-        return ""
+        var str = "";
+        for i in 0...number {
+            str += String(i);
+        }
+        return str;
     }
     
     func reverse(array: [Int]) -> [Int] {
         // return the reversed array of integer array `array`
-        return []
+        return array.reversed()
     }
     
     func insert(array: [Int], value: Int, position: Int) -> [Int] {
         // insert the `value` into `position` of `array` and return the result array
-        return []
+        var result = Array(array[...(position - 1)])
+        result.append(value)
+        result += array[position...]
+        return result
     }
     
     func isNumberEven(number: Int, callback: (Bool) -> Void) {
         // compare the `number` is even, then return the result with callback
+        callback(number % 2 == 0)
     }
     
     func fillSentence(sentence: inout String, words: [String]) {
         // replace the occurence of `{word}` substrings in the `sentence` value with `words`
+        var wordsClone = words;
+        sentence = sentence.split(separator: " ").map({elem -> String in
+            if String(elem).starts(with: "{word}") {
+                return wordsClone.removeFirst() + String(elem).suffix(from: "{word}".endIndex)
+            } else {
+                return String(elem)
+            }
+        }).joined(separator: " ")
     }
     
     func getUniqueElements(array: [Int]) -> [Int] {
         // return the only unique elements of array
-        return []
+        return Array(Set(array).sorted())
     }
     
     func commonElements(set1: Set<Int>, set2: Set<Int>) -> Set<Int> {
         // return the set of elements occurs in both of the set
-        return Set<Int>()
+        return set1.intersection(set2)
     }
     
     func subtract(original: Set<Int>, diff: Set<Int>) -> Set<Int> {
         // return the set of elements of `original` which are not present in `diff` set
-        return Set<Int>()
+        return original.subtracting(diff)
     }
     
     func applyDictionaryOperations(_ operations: [DictionaryOperation]) -> Dictionary<String, Int> {
-        // create an empty dictionary, and apply `operations` by order
-        return Dictionary<String, Int>()
-    }
+            var dict = Dictionary<String, Int>()
+            
+            for operation in operations {
+                switch operation {
+                case let .add(key, value):
+                    dict[key] = value;
+                case let .update(key, value):
+                    if dict[key] != nil {
+                        dict[key] = value;
+                    }
+                case let .remove(key):
+                    if dict[key] != nil {
+                        dict.removeValue(forKey: key)
+                    }
+                }
+            }
+            
+            // create an empty dictionary, and apply `operations` by order
+            return dict
+        }
     
     func getValuesIfContains(from dictionary: Dictionary<String, Int>, with keys: Set<String>) -> Dictionary<String, Int> {
         // return the dictionary with key and value pairs if key occurs in `keys` set
-        return Dictionary<String, Int>()
+        var dict = Dictionary<String, Int>()
+        for key in keys {
+            if (dictionary[key] != nil) {
+                dict[key] = Int(dictionary[key]!)
+            }
+        }
+        return dict
     }
     
     func updatePersonName(person: inout Person, name: String) -> Person {
+        person.update(newName: name)
         return person
     }
     
     func updateTrainName(train: inout Train, name: String) -> Train {
+        train.name = name
         return train
     }
     
@@ -477,7 +531,13 @@ class SwiftFundamentals1: SwiftFundamentals1Protocol {
     }
     
     func filterShapes(items: [Any]) -> [Shape] {
-        return []
+        var shapes: [Shape] = []
+        for item in items {
+            if (item is Shape) {
+                shapes.append(item as! Shape)
+            }
+        }
+        return shapes
     }
     
     func setCounter(counter: inout BigCounter, value: Int) {
@@ -493,11 +553,24 @@ class SwiftFundamentals1: SwiftFundamentals1Protocol {
     }
     
     func getCircleAreas(shapes: [Shape]) -> Dictionary<String, [Double]> {
-        let result = Dictionary<String, [Double]>()
-        
+        var result = Dictionary<String, [Double]>()
+        for shape in shapes {
+            if (shape is Circle) {
+                if (result[shape.color] == nil) {
+                    result[shape.color] = [(shape as? Circle)?.getArea() ?? 0]
+                } else {
+                    result[shape.color]?.append((shape as? Circle)?.getArea() ?? 0)
+                }
+            }
+        }
         return result
     }
 }
+
+var a = SwiftFundamentals1();
+var b = a.generateUniqueEvenIntArray(size: 10)
+
+print(b)
 
 struct Person {
     private var _name: String
@@ -512,8 +585,8 @@ struct Person {
         self._name = name
     }
     
-    func update(newName: String) {
-        
+    mutating func update(newName: String) {
+        self._name = newName
     }
 }
 
@@ -525,6 +598,7 @@ class Train {
     }
     
     func update(newName: String) {
+        name = newName
     }
 }
 
@@ -540,8 +614,8 @@ class Cat: Animal {
     let color: String
     
     init(color: String) {
-        self.color = ""
-        super.init(legCount: 0)
+        self.color = color
+        super.init(legCount: 4)
     }
 }
 
@@ -554,14 +628,15 @@ class Shape {
 }
 
 class Circle: Shape {
-    let radius: Int = 0
+    var radius: Int = 0
     
     init(radius: Int, color: String) {
-        super.init(color: "")
+        self.radius = radius
+        super.init(color: color)
     }
     
     required init(color: String) {
-        fatalError("init(color:) has not been implemented")
+        super.init(color: color)
     }
     
     func getArea() -> Double {
@@ -584,7 +659,7 @@ class Rect: Shape {
     let size: Size
     var center: Point {
         get {
-            return Point(x: 0, y: 0)
+            return Point(x: (origin.x + size.width) / 2, y: (origin.y + size.height) / 2)
         }
     }
     
@@ -597,16 +672,18 @@ class Rect: Shape {
     }
     
     required init(color: String) {
-        fatalError("init(color:) has not been implemented")
+        self.origin = Point(x: 0, y: 0)
+        self.size = Size(width: 0, height: 0)
+        super.init(color: color)
     }
 }
 
 @propertyWrapper
 struct TenOrMore {
-    private var number = 8
+    private var number = 10
     var wrappedValue: Int {
         get { return number }
-        set { number = max(newValue, 8) }
+        set { number = max(newValue, 10) }
     }
 }
 
@@ -614,7 +691,7 @@ struct BigCounter {
     @TenOrMore var value: Int
     
     init() {
-        self.value = 8
+        self.value = 10
     }
 }
 
@@ -638,10 +715,12 @@ class MovingCircle: Circle {
     }
     
     required init(color: String) {
-        fatalError("init(color:) has not been implemented")
+        self.origin = Point(x: 0, y: 0)
+        super.init(color: color)
     }
     
     func move(by: Point) {
+        self.origin = by
         // update only center
     }
 }
@@ -651,6 +730,10 @@ class LiveObject {
     
     init(onDeinit: @escaping (String) -> Void) {
         self.onDeinit = onDeinit
+    }
+    
+    deinit {
+        self.onDeinit("hello peter")
     }
 }
 
